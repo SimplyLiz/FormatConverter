@@ -1,0 +1,63 @@
+Format Converters Community License
+Version 1.0
+
+Copyright (c) 2026 Lisa Welsch
+
+TERMS AND CONDITIONS
+
+1. Definitions
+
+   "Software" means the format-converters source code, compiled output,
+   documentation, and associated files in this repository.
+
+   "Commercial Use" means use of the Software in a product or service that
+   generates direct or indirect revenue, including SaaS products, internal
+   tooling at for-profit companies, and consulting work.
+
+   "Qualifying Organization" means any individual, non-profit, educational
+   institution, or for-profit organization with total annual gross revenue
+   strictly below USD 25,000 in the most recently completed fiscal year.
+
+2. Free License Grant
+
+   Permission is hereby granted, free of charge, to any person or
+   Qualifying Organization to use, copy, modify, merge, publish, distribute,
+   sublicense, and/or incorporate the Software into their own work, subject
+   to the following conditions:
+
+   a) This license notice and copyright notice shall be included in all
+      copies or substantial portions of the Software.
+
+   b) The Software is provided "as is", without warranty of any kind,
+      express or implied, including but not limited to the warranties of
+      merchantability, fitness for a particular purpose, and non-infringement.
+      In no event shall the authors or copyright holders be liable for any
+      claim, damages, or other liability, whether in an action of contract,
+      tort, or otherwise, arising from, out of, or in connection with the
+      Software or the use or other dealings in the Software.
+
+3. Commercial License Requirement
+
+   Organizations that do not qualify under Section 2 (annual gross revenue
+   of USD 25,000 or more) must obtain a commercial license before using the
+   Software in any Commercial Use context.
+
+   To obtain a commercial license, contact: lisa@tastehub.io
+
+4. Educational and Personal Use
+
+   Use of the Software for personal projects, academic research, student
+   coursework, or teaching is always free, regardless of the organization's
+   revenue, provided the use is non-commercial.
+
+5. Open Source Projects
+
+   Use of the Software as a dependency of an open source project (licensed
+   under an OSI-approved license) is free, provided the open source project
+   itself does not have annual commercial revenue of USD 25,000 or more.
+
+6. Enforcement
+
+   Any use of the Software that does not comply with the terms of this
+   license automatically terminates the rights granted herein. Organizations
+   found to be in violation may be required to pay retroactive licensing fees.
