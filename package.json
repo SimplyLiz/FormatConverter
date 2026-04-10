@@ -1,0 +1,55 @@
+{
+  "name": "@lisa/format-converters",
+  "version": "0.1.0",
+  "description": "Zero-dependency TypeScript format detection and structure/prose splitting for XML, YAML, and Markdown",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage --coverage.reporter=text --coverage.reportsDirectory=coverage",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepublishOnly": "npm test && tsc"
+  },
+  "keywords": [
+    "xml",
+    "yaml",
+    "markdown",
+    "format",
+    "parser",
+    "converter",
+    "compression",
+    "llm"
+  ],
+  "license": "AGPL-3.0-only",
+  "author": "Lisa Welsch <lisa@tastehub.io> (https://www.lisawelsch.com)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SimplyLiz/FormatConverters.git"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^10.0.2",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^4.0.18"
+  }
+}
