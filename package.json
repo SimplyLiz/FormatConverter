@@ -41,7 +41,7 @@
   "author": "Lisa Welsch <lisa@tastehub.io> (https://www.lisawelsch.com)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SimplyLiz/FormatConverters.git"
+    "url": "git+https://github.com/SimplyLiz/FormatConverter.git"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

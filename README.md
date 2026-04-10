@@ -1,6 +1,6 @@
 # format-converters
 
-[![CI](https://github.com/SimplyLiz/FormatConverters/actions/workflows/ci.yml/badge.svg)](https://github.com/SimplyLiz/FormatConverters/actions/workflows/ci.yml)
+[![CI](https://github.com/SimplyLiz/FormatConverter/actions/workflows/ci.yml/badge.svg)](https://github.com/SimplyLiz/FormatConverter/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@lisa/format-converters.svg)](https://www.npmjs.com/package/@lisa/format-converters)
 [![license](https://img.shields.io/badge/license-Community-blue)](#license)
 
@@ -169,7 +169,7 @@ compress(messages, {
 Bug reports and pull requests are welcome. Please open an issue first for anything beyond small fixes so we can align on direction.
 
 ```bash
-git clone https://github.com/SimplyLiz/FormatConverters.git
+git clone https://github.com/SimplyLiz/FormatConverter.git
 cd FormatConverters
 npm install
 npm test
