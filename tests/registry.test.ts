@@ -31,11 +31,13 @@ describe('detect', () => {
 });
 
 describe('converters', () => {
-  it('exports four built-in converters', () => {
-    expect(converters).toHaveLength(4);
+  it('exports eight built-in converters', () => {
+    expect(converters).toHaveLength(8);
   });
 
-  it('names are json, xml, yaml, markdown in detection order', () => {
-    expect(converters.map((c) => c.name)).toEqual(['json', 'xml', 'yaml', 'markdown']);
+  it('names are in detection order', () => {
+    expect(converters.map((c) => c.name)).toEqual([
+      'json', 'xml', 'html', 'yaml', 'toml', 'markdown', 'csv', 'dockerfile',
+    ]);
   });
 });

@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/@lisa/format-converters.svg)](https://www.npmjs.com/package/@lisa/format-converters)
 [![license](https://img.shields.io/badge/license-Community-blue)](#license)
 
-Zero-dependency TypeScript library for detecting and splitting structured formats — JSON, XML, YAML, and Markdown — into parts that must survive verbatim and parts that can be compressed or summarized. **87 tests. Zero dependencies. Works everywhere JavaScript runs.**
+Zero-dependency TypeScript library for detecting and splitting structured formats — JSON, XML, HTML, YAML, TOML, Markdown, CSV, and Dockerfile — into parts that must survive verbatim and parts that can be compressed or summarized. **152 tests. Zero dependencies. Works everywhere JavaScript runs.**
 
 ```ts
 import { detect } from '@lisa/format-converters';
@@ -27,8 +27,12 @@ LLM pipelines often receive documents — config files, API responses, changelog
 |---|---|---|
 | JSON | Keys, short values, numbers, booleans | String values that are prose (6+ words, 100+ chars) |
 | XML | Tags, attributes, short values | Prose text nodes, verbose comments |
+| HTML | Tags, attributes, `<script>`/`<style>` as `[code]` | Prose text nodes, verbose HTML comments |
 | YAML | Keys, booleans, numbers, short strings | Keys with long prose values |
+| TOML | Keys, section headers, atomic values | Keys with long prose string values |
 | Markdown | Headings, tables | Paragraph prose between headings |
+| CSV | Header row + row count | Data rows |
+| Dockerfile | All instruction lines, short comments | Multi-line prose comment blocks |
 
 The splitting logic is the same pattern used in [context-compression-engine](https://github.com/SimplyLiz/ContextCompressionEngine) — extracted here so it can be reused independently.
 
@@ -125,26 +129,27 @@ interface FormatConverter {
 |---|---|---|
 | `JsonConverter` | `'json'` | Valid JSON object (≥2 keys) or array (≥2 items) |
 | `XmlConverter` | `'xml'` | Starts with `<?xml` or a letter-tag + has a closing tag |
+| `HtmlConverter` | `'html'` | `<!DOCTYPE html>` or `<html` + structural closing tags |
 | `YamlConverter` | `'yaml'` | ≥4 non-empty lines, >35% are `key: value` lines |
+| `TomlConverter` | `'toml'` | ≥2 `key = value` lines + section headers or density >40% |
 | `MarkdownConverter` | `'markdown'` | ≥2 heading lines (`#`–`######`) and content ≥200 chars |
+| `CsvConverter` | `'csv'` | ≥3 lines, commas in first two rows, consistent column count |
+| `DockerfileConverter` | `'dockerfile'` | ≥2 Dockerfile instruction keywords (FROM, RUN, COPY…) |
 
 ### Low-level exports
 
 ```ts
-// JSON
-import { detectJson } from '@lisa/format-converters';
-
-// XML
-import { detectXml, xmlSkeleton, xmlProseNodes } from '@lisa/format-converters';
-
-// YAML
-import { detectYaml, isAtomicYamlValue } from '@lisa/format-converters';
-
-// Markdown
-import { detectMarkdown } from '@lisa/format-converters';
-
-// Shared
-import { looksLikeProse } from '@lisa/format-converters';
+import {
+  detectJson,
+  detectXml, xmlSkeleton, xmlProseNodes,
+  detectHtml, htmlSkeleton, htmlProseNodes,
+  detectYaml, isAtomicYamlValue,
+  detectToml, isAtomicTomlValue,
+  detectMarkdown,
+  detectCsv,
+  detectDockerfile,
+  looksLikeProse,
+} from '@lisa/format-converters';
 ```
 
 ---
