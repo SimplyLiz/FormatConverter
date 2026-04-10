@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/@lisa/format-converters.svg)](https://www.npmjs.com/package/@lisa/format-converters)
 [![license](https://img.shields.io/badge/license-Community-blue)](#license)
 
-Zero-dependency TypeScript library for detecting and splitting structured formats — XML, YAML, and Markdown — into parts that must survive verbatim and parts that can be compressed or summarized.
+Zero-dependency TypeScript library for detecting and splitting structured formats — XML, YAML, and Markdown — into parts that must survive verbatim and parts that can be compressed or summarized. **59 tests. Zero dependencies. Works everywhere JavaScript runs.**
 
 ```ts
 import { detect } from '@lisa/format-converters';
@@ -146,28 +146,31 @@ import { looksLikeProse } from '@lisa/format-converters';
 
 ## Integration with context-compression-engine
 
-The built-in `XmlAdapter`, `YamlAdapter`, and `MarkdownAdapter` in [context-compression-engine](https://github.com/SimplyLiz/ContextCompressionEngine) implement the same logic as this library. If you use both, you can wire them together:
+`FormatConverter` (this library) and `FormatAdapter` ([context-compression-engine](https://github.com/SimplyLiz/ContextCompressionEngine)) are structurally identical — same four methods, same signatures. TypeScript's structural typing means you can pass converters directly as adapters with no wrapper:
 
 ```ts
 import { compress } from 'context-compression-engine';
-import type { FormatAdapter } from 'context-compression-engine';
 import { XmlConverter, YamlConverter, MarkdownConverter } from '@lisa/format-converters';
 
-// Wrap a FormatConverter as a FormatAdapter
-function asAdapter(c: typeof XmlConverter): FormatAdapter {
-  return {
-    name: c.name,
-    detect: c.detect.bind(c),
-    extractPreserved: c.extractPreserved.bind(c),
-    extractCompressible: c.extractCompressible.bind(c),
-    reconstruct: c.reconstruct.bind(c),
-  };
-}
-
 compress(messages, {
-  adapters: [XmlConverter, YamlConverter, MarkdownConverter].map(asAdapter),
+  adapters: [XmlConverter, YamlConverter, MarkdownConverter],
 });
 ```
+
+---
+
+## Contributing
+
+Bug reports and pull requests are welcome. Please open an issue first for anything beyond small fixes so we can align on direction.
+
+```bash
+git clone https://github.com/SimplyLiz/FormatConverters.git
+cd FormatConverters
+npm install
+npm test
+```
+
+Adding a new converter? Implement `FormatConverter`, add it to `src/registry.ts`, export it from `src/index.ts`, and add tests covering `detect`, `extractPreserved`, `extractCompressible`, and `reconstruct`.
 
 ---
 
