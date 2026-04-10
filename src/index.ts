@@ -1,6 +1,9 @@
 export type { FormatConverter, DetectResult } from './types.js';
 export { looksLikeProse } from './shared.js';
 
+// JSON
+export { JsonConverter, detectJson } from './json.js';
+
 // XML
 export { XmlConverter, detectXml, xmlSkeleton, xmlProseNodes } from './xml.js';
 

@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/@lisa/format-converters.svg)](https://www.npmjs.com/package/@lisa/format-converters)
 [![license](https://img.shields.io/badge/license-Community-blue)](#license)
 
-Zero-dependency TypeScript library for detecting and splitting structured formats — XML, YAML, and Markdown — into parts that must survive verbatim and parts that can be compressed or summarized. **59 tests. Zero dependencies. Works everywhere JavaScript runs.**
+Zero-dependency TypeScript library for detecting and splitting structured formats — JSON, XML, YAML, and Markdown — into parts that must survive verbatim and parts that can be compressed or summarized. **87 tests. Zero dependencies. Works everywhere JavaScript runs.**
 
 ```ts
 import { detect } from '@lisa/format-converters';
@@ -25,6 +25,7 @@ LLM pipelines often receive documents — config files, API responses, changelog
 
 | Format | Preserved | Compressible |
 |---|---|---|
+| JSON | Keys, short values, numbers, booleans | String values that are prose (6+ words, 100+ chars) |
 | XML | Tags, attributes, short values | Prose text nodes, verbose comments |
 | YAML | Keys, booleans, numbers, short strings | Keys with long prose values |
 | Markdown | Headings, tables | Paragraph prose between headings |
@@ -122,6 +123,7 @@ interface FormatConverter {
 
 | Export | Name | Detects |
 |---|---|---|
+| `JsonConverter` | `'json'` | Valid JSON object (≥2 keys) or array (≥2 items) |
 | `XmlConverter` | `'xml'` | Starts with `<?xml` or a letter-tag + has a closing tag |
 | `YamlConverter` | `'yaml'` | ≥4 non-empty lines, >35% are `key: value` lines |
 | `MarkdownConverter` | `'markdown'` | ≥2 heading lines (`#`–`######`) and content ≥200 chars |
@@ -129,6 +131,9 @@ interface FormatConverter {
 ### Low-level exports
 
 ```ts
+// JSON
+import { detectJson } from '@lisa/format-converters';
+
 // XML
 import { detectXml, xmlSkeleton, xmlProseNodes } from '@lisa/format-converters';
 
