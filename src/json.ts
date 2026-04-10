@@ -7,14 +7,10 @@
  *
  * Handles: package.json, tsconfig, API responses, tool call results,
  * OpenAPI specs, GitHub API payloads, LLM response objects.
- *
- * Note: valid JSON that contains only primitives or is a single-value object
- * is left unchanged — the converter requires at least 2 keys or 2 array items
- * to be worth treating as a document.
  */
 
-import { looksLikeProse } from './shared.js';
-import type { FormatConverter } from './types.js';
+import { looksLikeProse, findSegments } from './shared.js';
+import type { FormatConverter, CompressionBudget, CompressibleSegment } from './types.js';
 
 /** Returns true if the content is a parseable JSON object or array with enough entries. */
 export function detectJson(content: string): boolean {
@@ -72,7 +68,13 @@ function collectProse(value: unknown, out: string[]): void {
 export const JsonConverter: FormatConverter = {
   name: 'json',
 
+  budget: { structural: 0.0, prose: 0.75 } satisfies CompressionBudget,
+
   detect: detectJson,
+
+  compressionFeasible(content: string): boolean {
+    return this.extractCompressible(content).length > 0;
+  },
 
   extractPreserved(content: string): string[] {
     try {
@@ -92,6 +94,10 @@ export const JsonConverter: FormatConverter = {
     } catch {
       return [];
     }
+  },
+
+  extractSegments(content: string): CompressibleSegment[] {
+    return findSegments(content, this.extractCompressible(content));
   },
 
   reconstruct(preserved: string[], summary: string): string {

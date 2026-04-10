@@ -1,5 +1,5 @@
-export type { FormatConverter, DetectResult } from './types.js';
-export { looksLikeProse } from './shared.js';
+export type { FormatConverter, DetectResult, CompressibleSegment, CompressionBudget } from './types.js';
+export { looksLikeProse, splitProse, findSegments, segmentsOf } from './shared.js';
 
 // JSON
 export { JsonConverter, detectJson } from './json.js';
@@ -27,6 +27,7 @@ export { DockerfileConverter, detectDockerfile } from './dockerfile.js';
 
 /**
  * All built-in converters in recommended detection order, plus auto-detect.
- * XML before YAML — XML can contain colons that naive YAML detection might match.
+ * JSON and XML/HTML before YAML — all can contain colons that naive YAML detection might match.
+ * TOML before Markdown — TOML files can have `#` headings in comments.
  */
 export { converters, detect } from './registry.js';

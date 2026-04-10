@@ -9,8 +9,8 @@
  * API responses with HTML bodies.
  */
 
-import { looksLikeProse } from './shared.js';
-import type { FormatConverter } from './types.js';
+import { looksLikeProse, splitProse, findSegments } from './shared.js';
+import type { FormatConverter, CompressionBudget, CompressibleSegment } from './types.js';
 
 const HTML_DETECT_RE = /<!DOCTYPE\s+html|<html[\s>]/i;
 const HTML_CLOSE_RE = /<\/(?:html|body|div|p|section|article|main|header|footer|nav|ul|ol|table)/i;
@@ -36,7 +36,6 @@ export function htmlProseNodes(content: string): string[] {
     if (looksLikeProse(text)) out.push(text);
   }
 
-  // Also capture HTML comments with prose
   const commentRe = /<!--([\s\S]*?)-->/g;
   while ((m = commentRe.exec(stripped)) !== null) {
     const text = m[1].trim();
@@ -59,18 +58,31 @@ export function htmlSkeleton(content: string): string {
 
 /**
  * HTML FormatConverter — preserves structural skeleton with script/style as
- * `[code]` markers; compresses prose text nodes and verbose HTML comments.
+ * `[code]` markers; compresses prose text nodes using discourse-aware splitting.
  */
 export const HtmlConverter: FormatConverter = {
   name: 'html',
 
+  budget: { structural: 0.05, prose: 0.80 } satisfies CompressionBudget,
+
   detect: detectHtml,
+
+  compressionFeasible(content: string): boolean {
+    return htmlProseNodes(content).length > 0;
+  },
 
   extractPreserved(content: string): string[] {
     return [htmlSkeleton(content).trim()];
   },
 
-  extractCompressible: htmlProseNodes,
+  extractCompressible(content: string): string[] {
+    // Apply discourse-aware splitting within each prose node for finer segments
+    return htmlProseNodes(content).flatMap((node) => splitProse(node));
+  },
+
+  extractSegments(content: string): CompressibleSegment[] {
+    return findSegments(content, htmlProseNodes(content));
+  },
 
   reconstruct(preserved: string[], summary: string): string {
     if (!summary) return preserved.join('\n');

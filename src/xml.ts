@@ -8,8 +8,8 @@
  * JUnit reports, Ant build files, Logback configs.
  */
 
-import { looksLikeProse } from './shared.js';
-import type { FormatConverter } from './types.js';
+import { looksLikeProse, findSegments } from './shared.js';
+import type { FormatConverter, CompressionBudget, CompressibleSegment } from './types.js';
 
 const XML_DETECT_RE = /^\s*(?:<\?xml[^>]*\?>\s*)?<[a-zA-Z]/;
 const XML_CLOSE_RE = /<\/[a-zA-Z]/;
@@ -42,10 +42,7 @@ export function xmlProseNodes(content: string): string[] {
   return out;
 }
 
-/**
- * Detects XML content: starts with `<?xml` or a letter-tag, and has at least
- * one closing tag.
- */
+/** Detects XML content. */
 export function detectXml(content: string): boolean {
   return XML_DETECT_RE.test(content) && XML_CLOSE_RE.test(content);
 }
@@ -56,13 +53,23 @@ export function detectXml(content: string): boolean {
 export const XmlConverter: FormatConverter = {
   name: 'xml',
 
+  budget: { structural: 0.05, prose: 0.75 } satisfies CompressionBudget,
+
   detect: detectXml,
+
+  compressionFeasible(content: string): boolean {
+    return xmlProseNodes(content).length > 0;
+  },
 
   extractPreserved(content: string): string[] {
     return [xmlSkeleton(content).trim()];
   },
 
   extractCompressible: xmlProseNodes,
+
+  extractSegments(content: string): CompressibleSegment[] {
+    return findSegments(content, xmlProseNodes(content));
+  },
 
   reconstruct(preserved: string[], summary: string): string {
     if (!summary) return preserved.join('\n');

@@ -2,26 +2,20 @@
  * Markdown format converter.
  *
  * Preserves headings and tables (structural anchors). Compresses paragraph
- * prose between structural elements.
+ * prose between structural elements using discourse-aware splitting for
+ * finer-grained segments.
  *
  * Handles: READMEs, changelogs, API docs, specs, runbooks, blog posts.
- *
- * Note: content with code fences is typically handled by a separate code-split
- * pass before this converter is checked. This converter focuses on prose-heavy
- * Markdown without code blocks. If you need unified handling, run a code-aware
- * pass first.
  */
 
-import type { FormatConverter } from './types.js';
+import { splitProse, findSegments } from './shared.js';
+import type { FormatConverter, CompressionBudget, CompressibleSegment } from './types.js';
 
 const MD_HEADING_RE = /^#{1,6}\s+\S/;
 const MD_TABLE_LINE_RE = /^\|.+\|$/;
 const MD_TABLE_SEP_RE = /^\|[-| :]+\|$/;
 
-/**
- * Returns true if the content is structured Markdown: at least 2 headings and
- * at least 200 characters of content.
- */
+/** Returns true if the content is structured Markdown. */
 export function detectMarkdown(content: string): boolean {
   const lines = content.split('\n');
   const headingCount = lines.filter((l) => MD_HEADING_RE.test(l)).length;
@@ -30,12 +24,18 @@ export function detectMarkdown(content: string): boolean {
 
 /**
  * Markdown FormatConverter — preserves headings and tables, compresses
- * paragraph prose.
+ * paragraph prose with discourse-aware splitting.
  */
 export const MarkdownConverter: FormatConverter = {
   name: 'markdown',
 
+  budget: { structural: 0.0, prose: 0.80 } satisfies CompressionBudget,
+
   detect: detectMarkdown,
+
+  compressionFeasible(content: string): boolean {
+    return this.extractCompressible(content).some((s) => s.length >= 100);
+  },
 
   extractPreserved(content: string): string[] {
     const preserved: string[] = [];
@@ -74,10 +74,34 @@ export const MarkdownConverter: FormatConverter = {
       )
       .join('\n');
 
+    // Discourse-aware splitting: split within paragraphs at discourse boundaries
     return prose
+      .split(/\n{2,}/)
+      .flatMap((para) => splitProse(para))
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+  },
+
+  extractSegments(content: string): CompressibleSegment[] {
+    // For segments, use paragraph-level granularity (not discourse-split)
+    // so offsets map cleanly to original source spans
+    const prose = content
+      .split('\n')
+      .filter(
+        (l) =>
+          !MD_HEADING_RE.test(l) &&
+          !MD_TABLE_LINE_RE.test(l) &&
+          !MD_TABLE_SEP_RE.test(l) &&
+          !/^[-*_]{3,}\s*$/.test(l),
+      )
+      .join('\n');
+
+    const paragraphs = prose
       .split(/\n{2,}/)
       .map((p) => p.trim())
       .filter((p) => p.length > 0);
+
+    return findSegments(content, paragraphs);
   },
 
   reconstruct(preserved: string[], summary: string): string {

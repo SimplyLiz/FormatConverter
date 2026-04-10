@@ -9,9 +9,9 @@
  * CI/CD configs.
  */
 
-import type { FormatConverter } from './types.js';
+import { findSegments } from './shared.js';
+import type { FormatConverter, CompressionBudget, CompressibleSegment } from './types.js';
 
-// Matches: optional indent, key (word chars + - .), colon, optional value
 const YAML_KEY_LINE_RE = /^([ \t]*)([\w][\w.-]*)\s*:\s*(.*)$/;
 
 /** Returns true if the content looks like a YAML document. */
@@ -23,11 +23,7 @@ export function detectYaml(content: string): boolean {
   return keyLines.length / nonEmpty.length > 0.35;
 }
 
-/**
- * Returns true if a YAML value should be preserved verbatim (atomic / short).
- * Atomic: empty (nested object follows), anchors, references, block indicators,
- * booleans, null, numbers, strings ≤60 chars.
- */
+/** Returns true if a YAML value should be preserved verbatim (atomic / short). */
 export function isAtomicYamlValue(value: string): boolean {
   const v = value.trim();
   if (v === '' || v.startsWith('&') || v.startsWith('*') || v === '|' || v === '>') return true;
@@ -43,12 +39,18 @@ export function isAtomicYamlValue(value: string): boolean {
 export const YamlConverter: FormatConverter = {
   name: 'yaml',
 
+  budget: { structural: 0.0, prose: 0.75 } satisfies CompressionBudget,
+
   detect: detectYaml,
+
+  compressionFeasible(content: string): boolean {
+    return this.extractCompressible(content).length > 0;
+  },
 
   extractPreserved(content: string): string[] {
     return content.split('\n').filter((line) => {
       const m = line.match(YAML_KEY_LINE_RE);
-      if (!m) return true; // list items, --- markers, comments, blank lines
+      if (!m) return true;
       return isAtomicYamlValue(m[3]);
     });
   },
@@ -62,6 +64,10 @@ export const YamlConverter: FormatConverter = {
       }
     }
     return out;
+  },
+
+  extractSegments(content: string): CompressibleSegment[] {
+    return findSegments(content, this.extractCompressible(content));
   },
 
   reconstruct(preserved: string[], summary: string): string {

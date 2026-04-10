@@ -9,8 +9,8 @@
  * Dockerfiles, CI/CD build definitions.
  */
 
-import { looksLikeProse } from './shared.js';
-import type { FormatConverter } from './types.js';
+import { looksLikeProse, findSegments } from './shared.js';
+import type { FormatConverter, CompressionBudget, CompressibleSegment } from './types.js';
 
 const DOCKERFILE_INSTRUCTION_RE =
   /^(FROM|RUN|COPY|ADD|ENV|EXPOSE|CMD|ENTRYPOINT|WORKDIR|ARG|LABEL|USER|VOLUME|HEALTHCHECK|ONBUILD|STOPSIGNAL|SHELL)\b/i;
@@ -31,7 +31,6 @@ function collectCommentBlocks(content: string): string[] {
   for (const line of content.split('\n')) {
     const trimmed = line.trim();
     if (trimmed.startsWith('#')) {
-      // Skip parser directives (# syntax=, # escape=)
       const text = trimmed.slice(1).trim();
       if (!/^(?:syntax|escape|check)\s*=/i.test(text)) {
         block.push(text);
@@ -51,9 +50,12 @@ function collectCommentBlocks(content: string): string[] {
   return out;
 }
 
-/** Split content into segments: each segment is either a comment block or an instruction line. */
-function parseSegments(content: string): Array<{ type: 'comment_block'; lines: string[]; text: string } | { type: 'other'; line: string }> {
-  const segments: Array<{ type: 'comment_block'; lines: string[]; text: string } | { type: 'other'; line: string }> = [];
+type Segment =
+  | { type: 'comment_block'; lines: string[]; text: string }
+  | { type: 'other'; line: string };
+
+function parseSegments(content: string): Segment[] {
+  const segments: Segment[] = [];
   let commentBlock: string[] = [];
 
   const flushBlock = () => {
@@ -87,13 +89,18 @@ function parseSegments(content: string): Array<{ type: 'comment_block'; lines: s
 export const DockerfileConverter: FormatConverter = {
   name: 'dockerfile',
 
+  budget: { structural: 0.0, prose: 0.65 } satisfies CompressionBudget,
+
   detect: detectDockerfile,
+
+  compressionFeasible(content: string): boolean {
+    return collectCommentBlocks(content).length > 0;
+  },
 
   extractPreserved(content: string): string[] {
     const out: string[] = [];
     for (const seg of parseSegments(content)) {
       if (seg.type === 'comment_block') {
-        // Keep parser directives and non-prose comment blocks
         const isDirective = seg.lines.some((l) =>
           /^(?:syntax|escape|check)\s*=/i.test(l.trim().slice(1).trim()),
         );
@@ -108,6 +115,10 @@ export const DockerfileConverter: FormatConverter = {
   },
 
   extractCompressible: collectCommentBlocks,
+
+  extractSegments(content: string): CompressibleSegment[] {
+    return findSegments(content, collectCommentBlocks(content));
+  },
 
   reconstruct(preserved: string[], summary: string): string {
     const parts = [...preserved];
